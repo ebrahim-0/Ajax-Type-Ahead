@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ajax Type Ahead</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="get-state">
+      <form class="search-form">
+        <input type="text" placeholder="City or State" class="input" />
+        <ul class="suggestions">
+          <li>filter for a city</li>
+          <li>or a state</li>
+        </ul>
+      </form>
+    </div>
+    <script>
+      let input = document.querySelector(".input");
+      let suggestions = document.querySelector(".suggestions");
+
+      let endpoint =
+        "https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json";
+
+      let cities = [];
+
+      fetch(endpoint)
+        .then((data) => data.json())
+        .then((data) => (cities = data));
+
+      function findMatches(wordSearch, cities) {
+        return cities.filter((place) => {
+          let regex = new RegExp(wordSearch, "ig");
+          return place.city.match(regex) || place.state.match(regex);
+        });
+      }
+
+      function displayMatches() {
+        let matchArray = findMatches(this.value, cities);
+        let html = matchArray
+          .map((place) => {
+            let regex = new RegExp(this.value, "gi");
+            let cityName = place.city.replace(
+              regex,
+              `<span class="h1">${this.value}</span>`
+            );
+            let stateName = place.state.replace(
+              regex,
+              `<span class="h1">${this.value}</span>`
+            );
+            return `
+          <li>
+          <span class="name">${cityName},${stateName} </span>
+          <span class="population">${Number(
+            place.population
+          ).toLocaleString()} </span>
+          </li>
+          `;
+          })
+          .join("");
+        suggestions.innerHTML = html;
+      }
+
+      input.addEventListener("change", displayMatches);
+      input.addEventListener("keyup", displayMatches);
+    </script>
+  </body>
+</html>
